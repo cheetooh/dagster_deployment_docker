@@ -12,6 +12,11 @@ services:
       POSTGRES_DB: "postgres_db"
     networks:
       - dagster_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres_user -d postgres_db"]
+      interval: 10s
+      timeout: 8s
+      retries: 5
 
   # This service runs the gRPC server that loads your user code, in both dagster-webserver
   # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
@@ -85,9 +90,12 @@ services:
     networks:
       - dagster_network
     depends_on:
-      - dagster_postgresql
-      - pipeline_x
-      - pipeline_y
+      dagster_postgresql:
+        condition: service_healthy
+      pipeline_x:
+        condition: service_started
+      pipeline_y:
+        condition: service_started
 
   # This service runs the dagster-daemon process, which is responsible for taking runs
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
@@ -115,9 +123,12 @@ services:
     networks:
       - dagster_network
     depends_on:
-      - dagster_postgresql
-      - pipeline_y
-      - pipeline_x
+      dagster_postgresql:
+        condition: service_healthy
+      pipeline_x:
+        condition: service_started
+      pipeline_y:
+        condition: service_started
 
 networks:
   dagster_network:
