@@ -8,7 +8,6 @@ RUN pip install \
     dagster-graphql \
     dagster-webserver \
     dagster-postgres \
-    dagster-aws \
     dagster-docker
 
 # Set $DAGSTER_HOME and copy dagster instance and workspace YAML there
